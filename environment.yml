@@ -12,4 +12,6 @@ dependencies:
   - matplotlib
   - ipykernel
   - tqdm
+  - pre-commit
+  - black
 prefix: C:\Users\William Purvis\.conda\envs\medical_imaging
