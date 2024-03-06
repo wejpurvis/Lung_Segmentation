@@ -1,0 +1,15 @@
+name: medical_imaging
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+  - torchaudio
+  - cpuonly
+  - pytorch
+  - torchvision
+  - torchmetrics
+  - numpy
+  - matplotlib
+  - ipykernel
+  - tqdm
+prefix: C:\Users\William Purvis\.conda\envs\medical_imaging
