@@ -10,7 +10,7 @@ from tqdm import tqdm
 import concurrent.futures
 
 
-def load_patient_dicom(patient_path: str, anonymize: bool = False) -> np.ndarray:
+def load_patient_dicom(patient_path: str, anonymize: bool = True) -> np.ndarray:
     """
     Converts all DICOM files for a particular patient into a 3D numpy array
 
@@ -130,7 +130,9 @@ def load_patient_segmentations(segmentations_path: str, loading: bool = False) -
     return segmentations_dict
 
 
-def load_all_patient_dicoms_para(dataset_path, loading=False, anonymize=False):
+def load_all_patient_dicoms_para(
+    dataset_path: str, loading: bool = False, anonymize: bool = False
+) -> dict:
     """
     Load process DICOM data for patients
     Uses threading to optimise loading of DICOM data
@@ -182,4 +184,7 @@ def load_all_patient_dicoms_para(dataset_path, loading=False, anonymize=False):
             case_id, dicom_data = future.result()
             dicoms_dict[case_id] = dicom_data
 
-    return dicoms_dict
+    # Sort dicom dict based on keys
+    sorted_dicoms_dict = {k: dicoms_dict[k] for k in sorted(dicoms_dict.keys())}
+
+    return sorted_dicoms_dict
