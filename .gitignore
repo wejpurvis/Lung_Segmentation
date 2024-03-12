@@ -3,3 +3,10 @@ write_up/
 
 #Ignore all cache
 __pycache__/
+
+#Ignore jupyter notebooks
+*.ipynb
+
+#Ignore large datafiles
+data/*
+!data/README.md
