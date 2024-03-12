@@ -3,7 +3,7 @@ Utility functions for Medical Imaging project
 """
 
 import os
-
+import pickle
 import numpy as np
 import pydicom
 from tqdm import tqdm
@@ -188,3 +188,49 @@ def load_all_patient_dicoms_para(
     sorted_dicoms_dict = {k: dicoms_dict[k] for k in sorted(dicoms_dict.keys())}
 
     return sorted_dicoms_dict
+
+
+def get_data():
+    """
+    Load DICOM and segmentation data for patients
+    If pickle files are present, load them, otherwise load the data from the provided
+    DICOM and .npz files, convert them to appropriate data structures and save them to
+    pickle files.
+
+    Returns
+    -------
+    tuple
+        A tuple of dictionaries containing DICOM and segmentation data for patients
+    """
+    data_path = os.path.join(os.getcwd(), "data")
+
+    segs = None
+    dics = None
+
+    # Path for pickle files
+    seg_pickle_path = os.path.join(data_path, "segmentations.pkl")
+    dic_pickle_path = os.path.join(data_path, "dicoms.pkl")
+
+    # Check if DICOM and Segmentation pickle files are in data folder
+    if os.path.exists(seg_pickle_path) and os.path.exists(dic_pickle_path):
+        print("Pickle files found, loading data from pickle files")
+        with open(seg_pickle_path, "rb") as file:
+            segs = pickle.load(file)
+        with open(dic_pickle_path, "rb") as file:
+            dics = pickle.load(file)
+    else:
+        print("Pickle files not found, loading data from .npz and DICOM files")
+
+        seg_path = os.path.join(data_path, "Segmentations")
+        dic_path = os.path.join(data_path, "Images")
+
+        segs = load_patient_segmentations(seg_path, loading=True)
+        dics = load_all_patient_dicoms_para(dic_path, loading=True)
+
+        # Save the data as pickle files
+        with open(seg_pickle_path, "wb") as file:
+            pickle.dump(segs, file)
+        with open(dic_pickle_path, "wb") as file:
+            pickle.dump(dics, file)
+
+    return dics, segs
