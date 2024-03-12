@@ -10,3 +10,6 @@ __pycache__/
 #Ignore large datafiles
 data/*
 !data/README.md
+
+#Ignore DS_Store
+.DS_Store
