@@ -6,6 +6,7 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import os
+import time
 
 
 class ModelTrainer:
@@ -62,9 +63,13 @@ class ModelTrainer:
         print(f"Epoch {epoch_index+1}, Average Loss: {avg_loss:.4f}")
 
     def train(self):
+        print("Training the model...")
+        start_time = time.time()
         for epoch in range(self.num_epochs):
             self.train_one_epoch(epoch)
             # Here you can also call a method to evaluate your model on the test set
+        end_time = time.time()
+        print(f"Training finished in {end_time - start_time:.2f} seconds")
 
     def save_model(self, filename, file_path="./src/models"):
         """

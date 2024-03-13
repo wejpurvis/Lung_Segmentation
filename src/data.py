@@ -6,9 +6,52 @@ import torch
 from torch.utils.data import Dataset
 
 
+def split_data(data_dict, segmentation_dict, verbose=False, split_ratio=0.67):
+    """
+    Splits the data and segmentation dictionaries into training and test sets.
+    Default split ratio is 2 thirds (66.7%) training and 1 third (33.3%) testing.
+
+    Parameters
+    ----------
+    data_dict : dict
+        Dictionary of patient IDs to their 3D DICOM data numpy arrays
+    segmentation_dict : dict
+        Dictionary of patient IDs to their 3D segmentation mask numpy arrays
+    verbose : bool, optional
+        Whether to print the size of the training and test datasets. Default is False.
+    split_ratio : float, optional
+        The ratio of training data to validation data. Default is 0.67.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the training and test datasets
+    """
+    # Split the data into training and validation sets
+    num_train = int(len(data_dict) * split_ratio)
+    num_test = len(data_dict) - num_train
+
+    train_ids = list(data_dict.keys())[:num_train]
+    test_ids = list(data_dict.keys())[num_train:]
+
+    train_data_dict = {k: data_dict[k] for k in train_ids}
+    test_data_dict = {k: data_dict[k] for k in test_ids}
+
+    train_segmentation_dict = {k: segmentation_dict[k] for k in train_ids}
+    test_segmentation_dict = {k: segmentation_dict[k] for k in test_ids}
+
+    # Initialise the datasets
+    train_dataset = DICOMSliceDataset(train_data_dict, train_segmentation_dict)
+    test_dataset = DICOMSliceDataset(test_data_dict, test_segmentation_dict)
+
+    if verbose:
+        print(f"Splitting data into training and test sets...")
+        print(f"Training dataset size: {len(train_dataset)}")
+        print(f"Test dataset size: {len(test_dataset)}")
+    return train_dataset, test_dataset
+
+
 # TODO: check if data is normalised
-
-
 class DICOMSliceDataset(Dataset):
     def __init__(self, data_dict, segmentation_dict, transform=None):
         """
