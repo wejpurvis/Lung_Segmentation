@@ -54,7 +54,8 @@ class SimpleUNet(nn.Module):
         Returns a convolutional block
     maxpool_block(kernel_size, stride, padding)
         Returns a maxpooling block
-    transposed_block(in_channels, out_channels, kernel_size, stride, padding, output_padding)
+    transposed_block(in_channels, out_channels, kernel_size, stride,
+    padding, output_padding)
         Returns a transposed convolutional block
     final_layer(in_channels, out_channels, kernel_size, stride, padding)
         Returns the final layer
@@ -85,7 +86,8 @@ class SimpleUNet(nn.Module):
 
     def conv_block(self, in_channels, out_channels, kernel_size, stride, padding):
         """
-        Creates a convolutional block consisting of two convolutional layers followed by batch normalization and ReLU activation.
+        Creates a convolutional block consisting of two convolutional layers
+        followed by batch normalization and ReLU activation.
 
         Parameters
         ----------
