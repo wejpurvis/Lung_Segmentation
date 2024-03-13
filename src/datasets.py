@@ -33,9 +33,30 @@ class DICOMSliceDataset(Dataset):
                 self.masks.append(segmentation_dict[patient_id][slice_idx, :, :])
 
     def __len__(self):
+        """
+        Returns the length of the dataset.
+
+        Returns
+        -------
+        int
+            Length of the dataset.
+        """
         return len(self.slices)
 
     def __getitem__(self, idx):
+        """
+        Retrieves the slice and mask at the given index.
+
+        Parameters
+        ----------
+        idx : int
+            Index of the slice and mask to retrieve.
+
+        Returns
+        -------
+        torch.Tensor
+            A tensor representing the slice.
+        """
         slice = self.slices[idx]
         mask = self.masks[idx]
 
