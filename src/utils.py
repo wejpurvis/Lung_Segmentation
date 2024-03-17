@@ -213,13 +213,15 @@ def get_data():
 
     # Check if DICOM and Segmentation pickle files are in data folder
     if os.path.exists(seg_pickle_path) and os.path.exists(dic_pickle_path):
-        print("Pickle files found, loading data from pickle files")
+        print("DICOM and segmentation data found, loading data from pickle files")
         with open(seg_pickle_path, "rb") as file:
             segs = pickle.load(file)
         with open(dic_pickle_path, "rb") as file:
             dics = pickle.load(file)
     else:
-        print("Pickle files not found, loading data from .npz and DICOM files")
+        print(
+            "Compressed DICOM and segmentation data not found, loading data from .npz and DICOM files"
+        )
 
         # Add validation to check image and segmentation subdirectories exist
         if not os.path.exists(os.path.join(data_path, "Segmentations")):
