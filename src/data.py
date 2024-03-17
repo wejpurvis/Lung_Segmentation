@@ -45,9 +45,11 @@ def split_data(data_dict, segmentation_dict, verbose=False, split_ratio=0.67):
     test_dataset = DICOMSliceDataset(test_data_dict, test_segmentation_dict)
 
     if verbose:
-        print(f"Splitting data into training and test sets...")
-        print(f"Training dataset size: {len(train_dataset)}")
-        print(f"Test dataset size: {len(test_dataset)}")
+        print(f"Splitting data into training and test sets")
+        print(
+            f"Training dataset has {num_train} cases, with {len(train_dataset)} slices"
+        )
+        print(f"Test dataset has {num_test} cases, with {len(test_dataset)} slices")
     return train_dataset, test_dataset
 
 
