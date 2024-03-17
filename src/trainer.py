@@ -206,6 +206,8 @@ class ModelTrainer2:
         self.train_accuracies = []
         self.test_losses = []
         self.test_accuracies = []
+        self.set_model_name(loss_fn.__class__.__name__, batch_size, optimizer)
+        print(f"Model name set to: {self.model_name}")
 
     def train_one_epoch(self, epoch_index):
         self.model.train()
@@ -267,14 +269,50 @@ class ModelTrainer2:
         end_time = time.time()
         print(f"Training finished in {end_time - start_time:.2f} seconds")
 
-    def save_model(self, filename, file_path="./models"):
+    def set_model_name(self, loss_fn, batch_size, optimizer):
+        try:
+            learning_rate = optimizer.param_groups[0]["lr"]
+        except:
+            learning_rate = "lr"
+        self.model_name = f"unet_{loss_fn}_bs{batch_size}_lr{learning_rate}"
+
+    def save_model(self, file_path="./models"):
+        """
+        Save the trained model as a .pth file.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            The location of where to save the file, default is 'models' directory
+        """
+        if not hasattr(self, "model_name"):
+            print("Model name not set")
+            filename = "unet_model"
+        else:
+            filename = self.model_name
+
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         path = os.path.join(file_path, f"{filename}.pth")
         torch.save(self.model.state_dict(), path)
         print(f"Model saved at {path}")
 
-    def save_metrics(self, filename, file_path="./models"):
+    def save_metrics(self, file_path="./models"):
+        """
+        Save the model hyperparameters and metrics to a JSON file.
+        The training losses and accuracies, as well as the test losses and accuracies, are saved as dictionaries to a .JSON file.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            The location of where to save the file, default is 'models' directory
+        """
+        if not hasattr(self, "model_name"):
+            print("Model name not set")
+            filename = "unet_model"
+        else:
+            filename = self.model_name
+
         if not os.path.exists(file_path):
             os.makedirs(file_path)
         path = os.path.join(file_path, f"{filename}.csv")
@@ -288,4 +326,4 @@ class ModelTrainer2:
         with open(path, "w") as f:
             json.dump(metrics, f, indent=4)
 
-        print(f"Training metadata saved at {path}")
+        print(f"Model parameters saved at {path}")
