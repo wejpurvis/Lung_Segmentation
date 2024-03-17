@@ -163,9 +163,6 @@ class ModelTrainer2:
         The batch size, default is 3
     num_epochs : int, optional
         The number of epochs, default is 10
-    num_workers : int, optional
-        The number of workers for the DataLoader, default is 4
-
 
     Methods
     -------
@@ -191,7 +188,6 @@ class ModelTrainer2:
         accelerator,
         batch_size=3,
         num_epochs=10,
-        num_workers=4,
     ):
         self.accelerator = accelerator
         self.train_loader = train_dataloader
