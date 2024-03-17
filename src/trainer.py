@@ -10,6 +10,7 @@ from tqdm import tqdm
 import os
 import time
 import json
+from accelerate import Accelerator
 
 
 class ModelTrainer:
@@ -140,6 +141,8 @@ class ModelTrainer2:
     """
     A training class for the UNet model which includes functionality for both training and evaluation.
 
+    Uses HuggingFace's Accelerate library to handle distributed training.
+
     Supports saving model and model parameters.
 
     Parameters
@@ -154,8 +157,8 @@ class ModelTrainer2:
         The loss function
     optimizer : torch.optim.Optimizer
         The optimizer
-    device : torch.device
-        The device to train the model on
+    accelerator : Accelerator
+        The Accelerator object from HuggingFace's Accelerate library
     batch_size : int, optional
         The batch size, default is 3
     num_epochs : int, optional
@@ -180,32 +183,46 @@ class ModelTrainer2:
 
     def __init__(
         self,
-        train_dataset,
-        test_dataset,
+        train_dataloader,
+        test_dataloader,
         model,
         loss_fn,
         optimizer,
-        device,
+        accelerator,
         batch_size=3,
         num_epochs=10,
         num_workers=4,
     ):
-        self.train_loader = DataLoader(
-            train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_workers
-        )
-        self.test_loader = DataLoader(
-            test_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers
-        )
-        self.model = model.to(device)
+        self.accelerator = accelerator
+        self.train_loader = train_dataloader
+        self.test_loader = test_dataloader
+        self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
-        self.device = device
         self.num_epochs = num_epochs
-        self.accuracy_metric = BinaryAccuracy(threshold=0.5).to(device)
+        self.accuracy_metric = BinaryAccuracy(threshold=0.5)
+
+        # Prepare model, optmizer, dataloaders, & accuracy metric for accelerate
+        (
+            self.model,
+            self.optimizer,
+            self.train_loader,
+            self.test_loader,
+            self.accuracy_metric,
+        ) = accelerator.prepare(
+            self.model,
+            self.optimizer,
+            self.train_loader,
+            self.test_loader,
+            self.accuracy_metric,
+        )
+
+        # Metrics
         self.train_losses = []
         self.train_accuracies = []
         self.test_losses = []
         self.test_accuracies = []
+
         self.set_model_name(loss_fn.__class__.__name__, batch_size, optimizer)
         print(f"Model name set to: {self.model_name}")
 
@@ -216,13 +233,10 @@ class ModelTrainer2:
         progress_bar = tqdm(self.train_loader, desc=f"Epoch {epoch_index + 1}")
 
         for images, masks in progress_bar:
-            images = images.to(self.device)
-            masks = masks.to(self.device).float()
-
             self.optimizer.zero_grad()
             outputs = self.model(images)
-            loss = self.loss_fn(outputs, masks)
-            loss.backward()
+            loss = self.loss_fn(outputs, masks.float())
+            self.accelerator.backward(loss)  # Backward pass (accelerated)
             self.optimizer.step()
 
             train_loss += loss.item()
@@ -244,10 +258,8 @@ class ModelTrainer2:
         test_loss = 0.0
         with torch.no_grad():
             for images, masks in self.test_loader:
-                images = images.to(self.device)
-                masks = masks.to(self.device).float()
                 outputs = self.model(images)
-                loss = self.loss_fn(outputs, masks)
+                loss = self.loss_fn(outputs, masks.float())
 
                 test_loss += loss.item()
                 preds = torch.sigmoid(outputs)
@@ -261,13 +273,15 @@ class ModelTrainer2:
         print(f"Test Loss: {avg_loss:.4f}, Accuracy: {avg_accuracy:.4f}")
 
     def train(self):
-        print("Training the model...")
+        self.accelerator.print("Training the model...")
         start_time = time.time()
         for epoch in range(self.num_epochs):
             self.train_one_epoch(epoch)
             self.evaluate()  # Evaluate on test data after each epoch
         end_time = time.time()
-        print(f"Training finished in {end_time - start_time:.2f} seconds")
+        self.accelerator.print(
+            f"Training finished in {end_time - start_time:.2f} seconds"
+        )
 
     def set_model_name(self, loss_fn, batch_size, optimizer):
         try:
