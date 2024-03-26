@@ -3,6 +3,7 @@ Utility functions for Medical Imaging project
 """
 
 import os
+import torch
 import argparse
 import pickle
 import numpy as np
@@ -303,3 +304,110 @@ def get_model_loss():
     )
 
     return parser.parse_args()
+
+
+def dice_coefficient(prediction, target):
+    """
+    Calculate the Dice similarity coefficient (DSC) for a given prediction and target mask. (used in `evaluate_slices` function)
+
+    Parameters
+    ----------
+    prediction : torch.Tensor
+        The predicted mask
+    target : torch.Tensor
+        The target mask
+
+    Returns
+    -------
+    float
+        The Dice similarity coefficient (DSC)
+    """
+    epsilon = 1e-6
+    intersection = (prediction * target).sum()
+    dice = (2.0 * intersection + epsilon) / (prediction.sum() + target.sum() + epsilon)
+    return dice
+
+
+def evaluate_slices(model, dataloader, device):
+    """
+    Evaluate the model after training by calculating the binary accuracy and Dice similarity coefficient (DSC) for each slice for a given dataloader (test or train).
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        The trained model
+    dataloader : torch.utils.data.DataLoader
+        The DataLoader for the test or train dataset
+    device : str
+        The device to run the model on (e.g. 'cuda' or 'cpu' or 'mps')
+
+    Returns
+    -------
+    tuple
+        A tuple containing the Dice similarity coefficients, accuracies, all images, all masks, and all predictions
+    """
+    model.eval()
+    dice_scores = []
+    accuracies = []
+    all_predictions = []
+    all_masks = []
+    all_images = []
+
+    with torch.no_grad():
+        progress_bar = tqdm(dataloader, desc="Evaluation (part d)", leave=False)
+        for images, masks in progress_bar:
+            images, masks = images.to(device), masks.to(device)
+            model = model.to(device)
+            predictions = model(images)
+            predictions = torch.sigmoid(predictions)
+
+            pred_binary = (predictions > 0.5).float()  # Threshold predictions
+
+            # Store CPU-bound tensors for plotting/analysis
+            all_images.extend(images.cpu().numpy())
+            all_masks.extend(masks.cpu().numpy())
+            all_predictions.extend(pred_binary.cpu().numpy())
+
+            # Calculate metrics for each slice
+            for i in range(images.size(0)):
+                dice_score = dice_coefficient(pred_binary[i], masks[i])
+                dice_scores.append(dice_score.item())
+
+                correct = (pred_binary[i] == masks[i]).float().sum()
+                accuracy = correct / (masks[i].shape[1] * masks[i].shape[2])
+                accuracies.append(accuracy.item())
+
+    return dice_scores, accuracies, all_images, all_masks, all_predictions
+
+
+def get_top_worst_med_scores(dice_scores):
+    """
+    Get the indices of the top 3, worst 3 and median 3 DSC scores.
+
+    Parameters
+    ----------
+    dice_scores : list
+        List of DSC scores.
+
+    Returns
+    -------
+    best_indices : list
+        Indices of the top 3 DSC scores.
+    worst_indices : list
+        Indices of the worst 3 DSC scores.
+    median_indices : list
+        Indices of the median 3 DSC scores.
+    """
+    sorted_indices = np.argsort(dice_scores)
+    num_slices = len(dice_scores)
+
+    # Best DSC values (highest scores)
+    best_indices = sorted_indices[-3:]
+
+    # Worst DSC values (lowest scores)
+    worst_indices = sorted_indices[:3]
+
+    # Median DSC values
+    median_indices = sorted_indices[num_slices // 2 - 1 : num_slices // 2 + 2]
+
+    return best_indices, worst_indices, median_indices
