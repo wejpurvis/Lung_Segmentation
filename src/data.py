@@ -53,8 +53,22 @@ def split_data(data_dict, segmentation_dict, verbose=False, split_ratio=0.67):
     return train_dataset, test_dataset
 
 
-# TODO: check if data is normalised
 class DICOMSliceDataset(Dataset):
+    """
+    Custom PyTorch dataset for the DICOM and segmentation data.
+    Defines the __len__ and __getitem__ methods to retrieve slices and masks, as required by PyTorch.
+
+    Methods
+    -------
+    __init__(data_dict, segmentation_dict, transform=None)
+        Initializes the dataset with the DICOM and segmentation data.
+    __len__()
+        Returns the length of the dataset.
+    __getitem__(idx)
+        Retrieves the slice and mask at the given index.
+
+    """
+
     def __init__(self, data_dict, segmentation_dict, transform=None):
         """
         Parameters
