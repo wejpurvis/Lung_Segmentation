@@ -3,6 +3,7 @@ Utility functions for Medical Imaging project
 """
 
 import os
+import argparse
 import pickle
 import numpy as np
 import pydicom
@@ -23,8 +24,8 @@ def load_patient_dicom(patient_path: str, anonymize: bool = True) -> np.ndarray:
 
     Returns
     -------
-    numpy.ndarray
-        A 3d numpy array of the patient's DICOM files
+    tuple
+        The patient's case ID and 3D numpy array of the DICOM files. The array has shape
         [x, y, z] where x is the number of slices (axial plane), y is the
         coronal plane, and z is the sagittal plane
     """
@@ -41,15 +42,13 @@ def load_patient_dicom(patient_path: str, anonymize: bool = True) -> np.ndarray:
 
                 # Anonymize patient data (if requested)
                 if anonymize:
-                    dicom_data["PatientName"] = case_id
-                    dicom_data["PatientID"] = case_id
-                    dicom_data["PatientBirthDate"] = ""
+                    dicom_data.PatientName = case_id
+                    dicom_data.PatientID = case_id
+                    dicom_data.PatientBirthDate = ""
                     try:
-                        del dicom_data["PatientBirthTime"]
-                    except KeyError:
+                        del dicom_data.PatientBirthTime
+                    except:
                         pass
-                    # Save anonymized DICOM files
-                    dicom_data.save_as(full_path)
 
                 # Rescale pixel data (if provided)
                 rescale_slope = getattr(dicom_data, "RescaleSlope", 1)
@@ -151,7 +150,7 @@ def load_all_patient_dicoms_para(
     Returns
     -------
     dict
-        A dictionary of DICOMS for each patient
+        A dictionary of DICOMS (as 3D numpy arrays) for each patient
     """
     # Initialise dictionary of case_ids and dicoms
     dicoms_dict = {}
@@ -211,35 +210,75 @@ def get_data():
     seg_pickle_path = os.path.join(data_path, "segmentations.pkl")
     dic_pickle_path = os.path.join(data_path, "dicoms.pkl")
 
-    # Check if DICOM and Segmentation pickle files are in data folder
-    if os.path.exists(seg_pickle_path) and os.path.exists(dic_pickle_path):
-        print("DICOM and segmentation data found, loading data from pickle files")
-        with open(seg_pickle_path, "rb") as file:
-            segs = pickle.load(file)
+    # TODO: Seperate the loading of DICOM and segmentation data
+    # Check if DICOM pickle file (from first part) exists
+    if os.path.exists(dic_pickle_path):
+        print("Processed DICOM data found, loading from pickle file...")
         with open(dic_pickle_path, "rb") as file:
             dics = pickle.load(file)
     else:
-        print(
-            "Compressed DICOM and segmentation data not found, loading data from .npz and DICOM files"
-        )
+        print("Processed DICOM data not found, loading data from DICOM files...")
 
-        # Add validation to check image and segmentation subdirectories exist
-        if not os.path.exists(os.path.join(data_path, "Segmentations")):
-            raise FileNotFoundError("Segmentation data not found")
         if not os.path.exists(os.path.join(data_path, "Images")):
-            raise FileNotFoundError("DICOM data not found")
+            raise FileNotFoundError(
+                "\n\nDICOM data not found: please download it and place it in the 'data' directory.\n"
+            )
 
-        seg_path = os.path.join(data_path, "Segmentations")
         dic_path = os.path.join(data_path, "Images")
-
-        segs = load_patient_segmentations(seg_path, loading=True)
         dics = load_all_patient_dicoms_para(dic_path, loading=True)
 
-        # Save the data as pickle files
-        with open(seg_pickle_path, "wb") as file:
-            pickle.dump(segs, file)
+        # Save the data as a pickle file
         with open(dic_pickle_path, "wb") as file:
             pickle.dump(dics, file)
 
-    print("Data loaded successfully")
+        print("DICOM data saved successfully")
+
+    # Check if segmentation pickle file exists
+    if os.path.exists(seg_pickle_path):
+        print("Processed segmentation data found, loading from pickle file...")
+        with open(seg_pickle_path, "rb") as file:
+            segs = pickle.load(file)
+
+    else:
+        print("Processed segmentation data not found, loading data from .npz files...")
+
+        if not os.path.exists(os.path.join(data_path, "Segmentations")):
+            raise FileNotFoundError(
+                "\n\nSegmentation data not found: please download it and place it in the 'data' directory.\n"
+            )
+
+        seg_path = os.path.join(data_path, "Segmentations")
+        segs = load_patient_segmentations(seg_path, loading=True)
+
+        # Save the data as a pickle file
+        with open(seg_pickle_path, "wb") as file:
+            pickle.dump(segs, file)
+
+        print("Segmentation data saved successfully")
+
     return dics, segs
+
+
+def get_dicom_args():
+    """
+    Get CL arguments for running load_dicom.py (Module 1)
+
+    Returns
+    -------
+    argparse.Namespace
+        The CL arguments (whether to anonymize patient data)
+    """
+
+    parser = argparse.ArgumentParser(description="Load DICOM data for Medical Imaging")
+    parser.add_argument(
+        "--anonymize",
+        action="store_false",
+        help="Anonymize patient data by removing personal identifiers (default to True)",
+    )
+    parser.add_argument(
+        "--show-progress",
+        action="store_false",
+        help="Show progress bar when loading DICOM data (default to True)",
+    )
+
+    return parser.parse_args()
