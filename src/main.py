@@ -96,6 +96,8 @@ def train_save_model(
 
 if __name__ == "__main__":
 
+    device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+
     args = get_model_loss()
     default_loss = args.default_loss
 
@@ -119,7 +121,7 @@ if __name__ == "__main__":
         segmentations_testing,
         masks_testing,
         predictions_testing,
-    ) = evaluate_slices(model, test_dataloader, "mps")
+    ) = evaluate_slices(model, test_dataloader, device)
 
     print(
         "Evaluating model on training dataset to get dice scores and accuracies per slice.\n"
@@ -131,7 +133,7 @@ if __name__ == "__main__":
         segmentations_training,
         masks_training,
         predictions_training,
-    ) = evaluate_slices(model, train_dataloader, "mps")
+    ) = evaluate_slices(model, train_dataloader, device)
 
     # Plot the scores
     print("Plotting the scores per slice. (testing)")
