@@ -1,4 +1,4 @@
-"""
+r"""
 This module contains custom loss functions combinig cross entropy loss and soft dice loss.
 
 The dice similarity coefficient (DSC) is a spatial overlap index that measures the similarity between two binary images. This measure ranges from 0 to 1, where 0 indicates no spatial overlap and 1 indicates perfect spatial overlap. The DSC is defined as:
@@ -31,10 +31,21 @@ import torch.nn.functional as F
 
 
 class CombinedLoss(torch.nn.Module):
-    def __init__(self, alpha=1.0, beta=1.0, epsilon=1e-6):
+    """
+    Custom loss function which combines cross entropy loss and soft dice loss.
+
+    Parameters
+    ----------
+    alpha : float, optional
+        The weighting factor for the cross entropy loss (default is 0.5)
+    epsilon : float, optional
+        A small constant to avoid division by zero (default is 1e-6)
+    """
+
+    def __init__(self, alpha=0.5, epsilon=1e-6):
         super(CombinedLoss, self).__init__()
         self.alpha = alpha
-        self.beta = beta
+        self.beta = 1 - alpha
         self.epsilon = epsilon
         self.bce_loss = torch.nn.BCEWithLogitsLoss()
 
@@ -58,9 +69,17 @@ class CombinedLoss(torch.nn.Module):
 
         # Soft dice loss (apply sigmoid to the output)
         outputs_sig = torch.sigmoid(outputs)
-        num = 2 * torch.sum(outputs_sig * targets) + self.epsilon
-        den = torch.sum(outputs_sig**2) + torch.sum(targets**2) + self.epsilon
+        # Compute Soft Dice Loss for each item in the batch
+        num = 2 * torch.sum(outputs_sig * targets, dim=[1, 2, 3]) + self.epsilon
+        den = (
+            torch.sum(outputs_sig**2, dim=[1, 2, 3])
+            + torch.sum(targets**2, dim=[1, 2, 3])
+            + self.epsilon
+        )
         soft_dice_loss = 1 - (num / den)
+
+        # Average the Soft Dice Loss across the batch
+        soft_dice_loss = torch.mean(soft_dice_loss)
 
         combined_loss = (self.alpha * bce_loss) + (self.beta * soft_dice_loss)
         return combined_loss
