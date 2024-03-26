@@ -174,9 +174,83 @@ class ModelTrainer:
         torch.save(self.model.state_dict(), path)
         print(f"Model saved at {path}")
 
+    def model_exists(self, file_path="./models"):
+        """
+        Check if the model file and its metrics exists.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            The location of where to save the file, default is 'models' directory
+
+        Returns
+        -------
+        bool
+            True if the model file exists, False otherwise
+        """
+        if not hasattr(self, "model_name"):
+            print("Model name not set")
+            filename = "unet_model"
+        else:
+            filename = self.model_name
+
+        model_path = os.path.join(file_path, f"{filename}.pth")
+        metrics_path = os.path.join(file_path, f"{filename}.csv")
+
+        return os.path.exists(model_path) and os.path.exists(metrics_path)
+
+    def load_model(self, file_path="./models"):
+        """
+        Load the trained model from a .pth file.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            The location of where to load the file from, default is 'models' directory
+        """
+        if not hasattr(self, "model_name"):
+            print("Model name not set")
+            filename = "unet_model"
+        else:
+            filename = self.model_name
+
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+        path = os.path.join(file_path, f"{filename}.pth")
+        self.model.load_state_dict(torch.load(path))
+        print(f"Model loaded from {path}")
+        return self.model
+
+    def load_metrics(self, file_path="./models"):
+        """
+        Load the model losses and accuracies from a .CSV file.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            The location of where to load the file from, default is 'models' directory
+        """
+        if not hasattr(self, "model_name"):
+            print("Model name not set")
+            filename = "unet_model"
+        else:
+            filename = self.model_name
+
+        if not os.path.exists(file_path):
+            os.makedirs(file_path)
+        path = os.path.join(file_path, f"{filename}.csv")
+        with open(path, "r") as f:
+            metrics = json.load(f)
+        self.train_losses = metrics["train_losses"]
+        self.train_accuracies = metrics["train_accuracies"]
+        self.test_losses = metrics["test_losses"]
+        self.test_accuracies = metrics["test_accuracies"]
+        print(f"Model parameters loaded from {path}")
+        return metrics
+
     def save_metrics(self, file_path="./models"):
         """
-        Save the model hyperparameters and metrics to a CSV file.
+        Save the model losses and accuracies to a .CSV file.
         The training losses and accuracies, as well as the test losses and accuracies, are saved as dictionaries to a .CSV file.
 
         Parameters
@@ -199,11 +273,12 @@ class ModelTrainer:
             "test_losses": self.test_losses,
             "test_accuracies": self.test_accuracies,
         }
-        # Save to a JSON file
+        # Save to a CSV file
         with open(path, "w") as f:
             json.dump(metrics, f, indent=4)
 
         print(f"Model parameters saved at {path}")
+        return metrics
 
 
 class ModelTrainer_HF_accelerated:
