@@ -176,8 +176,8 @@ class ModelTrainer:
 
     def save_metrics(self, file_path="./models"):
         """
-        Save the model hyperparameters and metrics to a JSON file.
-        The training losses and accuracies, as well as the test losses and accuracies, are saved as dictionaries to a .JSON file.
+        Save the model hyperparameters and metrics to a CSV file.
+        The training losses and accuracies, as well as the test losses and accuracies, are saved as dictionaries to a .CSV file.
 
         Parameters
         ----------
