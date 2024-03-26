@@ -216,6 +216,7 @@ def get_data():
         print("Processed DICOM data found, loading from pickle file...")
         with open(dic_pickle_path, "rb") as file:
             dics = pickle.load(file)
+
     else:
         print("Processed DICOM data not found, loading data from DICOM files...")
 
@@ -230,8 +231,7 @@ def get_data():
         # Save the data as a pickle file
         with open(dic_pickle_path, "wb") as file:
             pickle.dump(dics, file)
-
-        print("DICOM data saved successfully")
+            print("Compressed DICOM data saved to 'data/dicoms.pkl'")
 
     # Check if segmentation pickle file exists
     if os.path.exists(seg_pickle_path):
@@ -253,8 +253,7 @@ def get_data():
         # Save the data as a pickle file
         with open(seg_pickle_path, "wb") as file:
             pickle.dump(segs, file)
-
-        print("Segmentation data saved successfully")
+            print("Compression segmentation data saved to 'data/segmentations.pkl'")
 
     return dics, segs
 
