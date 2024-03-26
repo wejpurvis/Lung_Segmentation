@@ -281,3 +281,25 @@ def get_dicom_args():
     )
 
     return parser.parse_args()
+
+
+def get_model_loss():
+    """
+    Get CL arguments for running model (custom loss or standard BCEWithLogitsLoss)
+
+    Returns
+    -------
+    argparse.Namespace
+        The CL arguments (whether to use custom loss function)
+    """
+
+    parser = argparse.ArgumentParser(
+        description="Run U-Net model for image segmentation"
+    )
+    parser.add_argument(
+        "--default-loss",
+        action="store_true",
+        help="Use default loss function for training the model. If declared, BCEWithLogitsLoss will be used as the loss function",
+    )
+
+    return parser.parse_args()
