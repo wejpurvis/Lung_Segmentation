@@ -3,12 +3,12 @@ Script for running the UNet model on the pre-processed DICOM files
 """
 
 import torch
-import cProfile
+import torch.nn as nn
 
 
 from accelerate import Accelerator
 from torch.utils.data import DataLoader
-from utils import get_data
+from utils import get_data, get_model_loss
 from data import split_data, DICOMSliceDataset
 from unet import SimpleUNet
 from trainer import ModelTrainer, ModelTrainer_HF_accelerated
@@ -70,17 +70,41 @@ def train_save_model(
         num_workers=4,
     )
 
-    # Train the model
-    trainer.train()
+    # Check if model exists
+    if trainer.model_exists():
+        print("Trained model and corresponding losses found. Loading model...")
+        # Load the model
+        trainer.load_model()
+        # Load the metrics
+        metrics = trainer.load_metrics()
 
-    # Save the model
-    trainer.save_model()
+    else:
+        print("Model does not exist. Training model...")
+        # Train the model
+        trainer.train()
 
-    # Save the metrics
-    trainer.save_metrics()
+        # Save the model
+        trainer.save_model()
+
+        # Save the metrics
+        metrics = trainer.save_metrics()
+
+    # Return trained model and metrics
+    return trainer.model, metrics
 
 
 if __name__ == "__main__":
 
-    loss_fn = CombinedLoss()
-    train_save_model(loss_fn, 4)
+    args = get_model_loss()
+    default_loss = args.default_loss
+
+    if default_loss:
+        loss_fn = nn.BCEWithLogitsLoss()
+        print("Using default loss function")
+    else:
+        loss_fn = CombinedLoss()
+        print("Using custom loss function")
+
+    # Run the model and save it
+    model, metrics = train_save_model(loss_fn, 4)
+    print(metrics)
