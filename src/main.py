@@ -8,11 +8,12 @@ import torch.nn as nn
 
 from accelerate import Accelerator
 from torch.utils.data import DataLoader
-from utils import get_data, get_model_loss
+from utils import get_data, get_model_loss, evaluate_slices, get_top_worst_med_scores
 from data import split_data, DICOMSliceDataset
 from unet import SimpleUNet
 from trainer import ModelTrainer, ModelTrainer_HF_accelerated
 from custom_loss import CombinedLoss
+from plotting import plot_scores, plot_examples
 
 
 def train_save_model(
@@ -90,7 +91,7 @@ def train_save_model(
         metrics = trainer.save_metrics()
 
     # Return trained model and metrics
-    return trainer.model, metrics
+    return trainer.model, metrics, train_dataloader, test_dataloader
 
 
 if __name__ == "__main__":
@@ -105,6 +106,74 @@ if __name__ == "__main__":
         loss_fn = CombinedLoss()
         print("Using custom loss function")
 
-    # Run the model and save it
-    model, metrics = train_save_model(loss_fn, 4)
-    print(metrics)
+    # Run the model and save it (or load it)
+    model, metrics, train_dataloader, test_dataloader = train_save_model(loss_fn, 4)
+
+    # Evaluate model (part d)
+    print(
+        "Evaluating model on testing dataset to get dice scores and accuracies per slice.\n"
+    )
+    (
+        dice_scores_testing,
+        accuracies_testing,
+        segmentations_testing,
+        masks_testing,
+        predictions_testing,
+    ) = evaluate_slices(model, test_dataloader, "mps")
+
+    print(
+        "Evaluating model on training dataset to get dice scores and accuracies per slice.\n"
+    )
+
+    (
+        dice_scores_training,
+        accuracies_training,
+        segmentations_training,
+        masks_training,
+        predictions_training,
+    ) = evaluate_slices(model, train_dataloader, "mps")
+
+    # Plot the scores
+    print("Plotting the scores per slice. (testing)")
+    plot_scores(dice_scores_testing, accuracies_testing, "testing", save=True)
+
+    print("Plotting the scores per slice. (training)")
+    plot_scores(dice_scores_training, accuracies_training, "training", save=True)
+
+    # Plot the segmentations
+    best_scores, worst_scores, median_scores = get_top_worst_med_scores(
+        dice_scores_testing
+    )
+
+    # Plot the best, worst and median segmentations
+    print("Plotting the best, worst and median segmentations for testing set.")
+    plot_examples(
+        best_scores,
+        dice_scores_testing,
+        accuracies_testing,
+        masks_testing,
+        predictions_testing,
+        segmentations_testing,
+        "Best DSC scores",
+        save=True,
+    )
+    plot_examples(
+        worst_scores,
+        dice_scores_testing,
+        accuracies_testing,
+        masks_testing,
+        predictions_testing,
+        segmentations_testing,
+        "Worst DSC scores",
+        save=True,
+    )
+    plot_examples(
+        median_scores,
+        dice_scores_testing,
+        accuracies_testing,
+        masks_testing,
+        predictions_testing,
+        segmentations_testing,
+        "Median DSC scores",
+        save=True,
+    )
