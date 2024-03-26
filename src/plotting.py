@@ -8,7 +8,7 @@ from matplotlib.animation import FuncAnimation
 import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
-plots_dir = os.path.join(current_dir, "plots")
+plots_dir = os.path.join("plots")
 
 plt.rcParams["savefig.dpi"] = 300  # high res images
 
@@ -178,7 +178,7 @@ def plot_scores(dice_scores, accuracies, name, save=True):
     plt.figure(figsize=(20, 6))
 
     # Add suptitle
-    plt.suptitle(f"Model Evaluation Metrics for {name} dataset", fontsize=16)
+    plt.suptitle(f"Model evaluation metrics for {name} dataset", fontsize=16)
 
     # Dice Score Plot
     plt.subplot(1, 2, 1)
@@ -186,7 +186,7 @@ def plot_scores(dice_scores, accuracies, name, save=True):
     plt.xlabel("Slice number")
     plt.ylabel("Dice Score")
     plt.title("Dice Score per Slice")
-    plt.legend()
+    plt.legend(loc="upper left")
 
     # Accuracy Plot
     plt.subplot(1, 2, 2)
@@ -350,6 +350,6 @@ def plot_examples(
     plt.tight_layout(rect=[0, 0.03, 1, 0.95])
     if save:
         print(f"Saving plot as plots/{title}.png")
-        plt_filename = f"{title}.png"
+        filename_title = title.replace(" ", "_")
+        plt_filename = f"{filename_title}.png"
         plt.savefig(os.path.join(plots_dir, plt_filename), bbox_inches="tight")
-    plt.show()
