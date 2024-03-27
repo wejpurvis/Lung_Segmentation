@@ -9,7 +9,6 @@ from tqdm import tqdm
 import os
 import time
 import json
-from accelerate import Accelerator
 
 
 class ModelTrainer:
