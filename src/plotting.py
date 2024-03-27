@@ -1,5 +1,5 @@
 """
-Plotting functions for medical imaging CW
+This module contains functions to plot CT scans obtained from DICOM files, as well as loss curves from model training.
 """
 
 import os
@@ -160,7 +160,9 @@ def plot_patients(
     return None
 
 
-def plot_scores(dice_scores, accuracies, name, save=True):
+def plot_scores(
+    dice_scores: list, accuracies: list, name: str, save: bool = True
+) -> None:
     """
     Plot the dice scores and accuracies for each slice in the dataset (part d).
 
@@ -204,17 +206,18 @@ def plot_scores(dice_scores, accuracies, name, save=True):
 
 
 def plot_examples(
-    indices,
-    dice_scores,
-    accuracies,
-    masks,
-    predictions,
-    segmentations,
-    title,
-    save=True,
-):
+    indices: list,
+    dice_scores: list,
+    accuracies: list,
+    masks: list,
+    predictions: list,
+    segmentations: list,
+    title: str,
+    save: bool = True,
+) -> None:
     """
     Plot examples of segmentations, masks, and predictions for a given set of indices.
+    This function is used for part d where examples of 2D slices showing the best, worst, and median DSC scores are plotted.
 
     Parameters
     ----------
@@ -240,7 +243,7 @@ def plot_examples(
         # Plot segmentation
         axes[i, 0].imshow(segmentations[idx][0], cmap="gray")
         axes[i, 0].axis("off")
-        axes[i, 0].set_title("Segmentation", fontsize=14)
+        axes[i, 0].set_title("CT Scan Image", fontsize=14)
         # Add DSC score as text
         axes[i, 0].text(
             0.95,
@@ -286,7 +289,7 @@ def plot_examples(
 
         # Plot mask
         axes[i, 1].imshow(masks[idx][0], cmap="gray")
-        axes[i, 1].set_title("Mask", fontsize=14)
+        axes[i, 1].set_title("True Segmentation", fontsize=14)
         axes[i, 1].axis("off")
         axes[i, 1].text(
             0.95,
@@ -353,3 +356,4 @@ def plot_examples(
         filename_title = title.replace(" ", "_")
         plt_filename = f"{filename_title}.png"
         plt.savefig(os.path.join(plots_dir, plt_filename), bbox_inches="tight")
+    return None
