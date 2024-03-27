@@ -47,20 +47,6 @@ class SimpleUNet(nn.Module):
         First upconvolutional block
     final : nn.Conv2d
         Final layer
-
-    Methods
-    -------
-    conv_block(in_channels, out_channels, kernel_size, stride, padding)
-        Returns a convolutional block
-    maxpool_block(kernel_size, stride, padding)
-        Returns a maxpooling block
-    transposed_block(in_channels, out_channels, kernel_size, stride,
-    padding, output_padding)
-        Returns a transposed convolutional block
-    final_layer(in_channels, out_channels, kernel_size, stride, padding)
-        Returns the final layer
-    forward(x)
-        Forward pass through the model
     """
 
     def __init__(self, in_channels, out_channels):
