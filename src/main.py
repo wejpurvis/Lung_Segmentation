@@ -6,12 +6,11 @@ import torch
 import torch.nn as nn
 
 
-from accelerate import Accelerator
 from torch.utils.data import DataLoader
 from utils import get_data, get_model_loss, evaluate_slices, get_top_worst_med_scores
-from data import split_data, DICOMSliceDataset
+from data import split_data
 from unet import SimpleUNet
-from trainer import ModelTrainer, ModelTrainer_HF_accelerated
+from trainer import ModelTrainer
 from custom_loss import CombinedLoss
 from plotting import plot_scores, plot_examples
 
