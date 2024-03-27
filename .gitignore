@@ -17,3 +17,6 @@ data/*
 
 # Ignore saved losses
 *.csv
+
+# Ignore documentation build
+docs/build/
