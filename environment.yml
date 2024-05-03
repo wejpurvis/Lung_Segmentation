@@ -1,4 +1,4 @@
-name: medical_imaging
+name: medical_imaging_wp289
 channels:
   - pytorch
   - conda-forge
@@ -48,8 +48,6 @@ dependencies:
   - libcxx=14.0.6
   - libdeflate=1.17
   - libffi=3.4.4
-  - libgfortran=5.0.0
-  - libgfortran5=11.3.0
   - libjpeg-turbo=2.0.0
   - libopenblas=0.3.21
   - libpng=1.6.39
@@ -90,7 +88,7 @@ dependencies:
   - python=3.12.2
   - python-dateutil=2.8.2
   - python-tzdata=2023.3
-  - pytorch=2.2.1
+  - pytorch=2.2.0
   - pytz=2023.3.post1
   - pyyaml=6.0.1
   - pyzmq=25.1.2
@@ -102,8 +100,7 @@ dependencies:
   - stack_data=0.6.2
   - sympy=1.12
   - tk=8.6.12
-  - torchaudio=2.2.1
-  - torchvision=0.17.1
+  - torchvision=0.16.1
   - tornado=6.3.3
   - tqdm=4.66.2
   - traitlets=5.14.1

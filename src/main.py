@@ -1,5 +1,5 @@
 """
-Script for running the UNet model on the pre-processed DICOM files
+Entry point for running the U-Net model on the pre-processed DICOM files and generate plots used in the report. If a loaded model is found, the training step is skipped.
 """
 
 import torch

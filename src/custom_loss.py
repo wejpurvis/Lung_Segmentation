@@ -1,10 +1,10 @@
 r"""
-This module contains custom loss functions combinig cross entropy loss and soft dice loss.
+This module contains the custom loss function which combines cross entropy loss and soft dice loss.
 
 The dice similarity coefficient (DSC) is a spatial overlap index that measures the similarity between two binary images. This measure ranges from 0 to 1, where 0 indicates no spatial overlap and 1 indicates perfect spatial overlap. The DSC is defined as:
 
 .. math::
-    Dice = \frac{2\left | A\cap B \right |}{\left | A \right | + \left |  B \right |}
+    \textrm{DSC} = \frac{2\left | A\cap B \right |}{\left | A \right | + \left |  B \right |}
 
 where :math:`\left | A\cap B \right |` represents the common elements between sets A and B, and :math:`\left | A \right |` and :math:`\left | B \right |` represent the number of elements in sets A and B, respectively.
 
@@ -14,16 +14,16 @@ where :math:`\left | A\cap B \right |` represents the common elements between se
 In order to formulate a loss function which can be minimised, the DSC can be subtracted from 1. This is known as the **soft dice loss**:
 
 .. math::
-    SoftDiceLoss = 1 - \frac{2 (\sum_{pixels} y_{true}y_{pred})+\epsilon}{\sum_{pixels} y_{true}^{2}\sum_{pixels} y_{pred}^{2} + \epsilon}
+    \textrm{SoftDiceLoss} = 1 - \frac{2 (\sum_{i=1}^{N} y_{i}\hat{y_{i}})+\epsilon}{\sum_{i=1}^{N} y_{i}^{2}\sum_{i}^{N} \hat{y_{i}}^{2} + \epsilon}
 
-where :math: `\epsilon` is a small constant to avoid division by zero.
+where :math:`\epsilon` is a small constant to avoid division by zero.
 
 The **cross entropy loss** is a standard loss function used for binary classification problems. It is defined as:
 
 .. math::
-    CrossEntropyLoss = -\sum_{pixels} y_{true}log(y_{pred}) + (1-y_{true})log(1-y_{pred})
+    \textrm{CrossEntropyLoss} = -\frac{1}{N}\sum_{i=1}^{N} y_{i}\log(\hat{y_{i}}) + (1-y_{i})\log(1-\hat{y_{i}})
 
-where :math:`y_{true}` is the true label and :math:`y_{pred}` is the predicted label.
+where :math:`y_{i}` is the true label and :math:`\hat{y_{i}}` is the predicted label.
 """
 
 import torch
@@ -49,7 +49,7 @@ class CombinedLoss(torch.nn.Module):
         self.epsilon = epsilon
         self.bce_loss = torch.nn.BCEWithLogitsLoss()
 
-    def forward(self, outputs, targets):
+    def forward(self, outputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         """
         Forward pass through the combined loss function.
 
