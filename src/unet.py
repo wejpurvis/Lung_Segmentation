@@ -220,16 +220,16 @@ class SimpleUNet(nn.Module):
         torch.Tensor
             Output tensor
         """
-        # downsampling part
+        # downsampling (encoder)
         conv1 = self.conv1(x)
         maxpool1 = self.maxpool1(conv1)
         conv2 = self.conv2(maxpool1)
         maxpool2 = self.maxpool2(conv2)
         conv3 = self.conv3(maxpool2)
         maxpool3 = self.maxpool3(conv3)
-        # middle part
+        # bottleneck
         middle = self.middle(maxpool3)
-        # upsampling part
+        # upsampling (decoder)
         upsample3 = self.upsample3(middle)
         upconv3 = self.upconv3(torch.cat([upsample3, conv3], 1))
         upsample2 = self.upsample2(upconv3)
@@ -237,4 +237,6 @@ class SimpleUNet(nn.Module):
         upsample1 = self.upsample1(upconv2)
         upconv1 = self.upconv1(torch.cat([upsample1, conv1], 1))
         final_layer = self.final(upconv1)
+        
         return final_layer
+
