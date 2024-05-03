@@ -14,8 +14,6 @@
     - [Module 2b: UNet-based segmentation](#module-2b-unet-based-segmentation)
   - [Building documentation](#building-documentation)
 - [License](#license)
-  - [A comment on commit history](#a-comment-on-commit-history)
-  - [A note on the use of generation tools](#a-note-on-the-use-of-generation-tools)
 
 ![Segmentations of lung cancers](plots/CT_Scans_Overlay_Animated.gif)
 
@@ -93,17 +91,3 @@ make html
 ## License
 
 This project is licensed under the MIT license - see the [LICENSE](license.txt) file for details.
-
-### A comment on commit history
-
-This project was initially hosted on my private GitHub (due to a delay in receiving access to the GitLab repository). In following with best software development practises, development was carried out on different branches before being merged with `main`. 
-
-Unfortunately, when the project was migrated from GitHub to GitLab on 27/03/24, the different branches were compressed into a single main.
-
-### A note on the use of generation tools
-
-GitHub copilot was used throughout the project as it is installed on my IDE (VS code). It's use was limited to auto-completing lines of code where it made sense to do so (i.e, it was not used to blindly implement functionality, simply to complete code and/or docstring sentences). ChatGPT was used to help de-bug the `.tex` file of the report with prompts such as:
-
-- **Prompt**: "Why does this text not compile in Latex: "[...] \textrm{x}_{k} = sum_{k=1}{N}[...]"
-- **Prompt**: "How should I reference a lstlisting in latex?"
-- **Prompt**: "How can I get the word count of a latex document?"
